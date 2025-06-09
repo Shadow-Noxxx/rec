@@ -13,17 +13,16 @@ app = Client("fetch_telegram_code", api_id=api_id, api_hash=api_hash, session_st
 async def main():
     async with app:
         try:
-            # Get the latest message from Telegram official account
-            tg_messages = await app.get_chat_history("Telegram", limit=1)
-            if tg_messages:
-                last_msg = tg_messages[0].text
-                print("📩 Last message from @Telegram:")
-                print(last_msg)
+            # Correct: use async for to fetch the latest message
+            async for message in app.get_chat_history("Telegram", limit=1):
+                if message.text:
+                    print("📩 Last message from @Telegram:")
+                    print(message.text)
 
-                # Send it to your own Saved Messages
-                await app.send_message("me", f"🔐 Code from @Telegram:\n\n{last_msg}")
-            else:
-                print("❌ No messages found from @Telegram.")
+                    await app.send_message("me", f"🔐 Code from @Telegram:\n\n{message.text}")
+                else:
+                    print("❌ Last message has no text.")
+                break  # Only need the first message
         except Exception as e:
             print(f"⚠️ Error: {e}")
 
