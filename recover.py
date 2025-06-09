@@ -8,21 +8,26 @@ session_string = (
     "-O3WE4kWw-6uxiGSrUAVoqOJKUXOZEMwu8PNshf4MPiaPZuPywlkBLa4nexI1vjqtQwX0w48XZVX3eXIHPlREw-xfH3ojJk6Z8rkSWj7rmRL7LGckpTTu3NQiQYZ8aocMYQylxiwyyuf1WqGHgzcXS6PXyV4qzZlZBMxEZLIZk9PYDC_WMj2pqn-wD-TgAAAAHQsVyNAA"
 )
 
-app = Client("fetch_telegram_code", api_id=api_id, api_hash=api_hash, session_string=session_string)
+app = Client("code_forwarder", api_id=api_id, api_hash=api_hash, session_string=session_string)
 
 async def main():
     async with app:
         try:
-            # Correct: use async for to fetch the latest message
-            async for message in app.get_chat_history("Telegram", limit=1):
-                if message.text:
-                    print("📩 Last message from @Telegram:")
-                    print(message.text)
+            # Fetch last message from Telegram Support (user ID 777000)
+            async for msg in app.get_chat_history(777000, limit=1):
+                print("📩 Latest message from Telegram Support:\n")
 
-                    await app.send_message("me", f"🔐 Code from @Telegram:\n\n{message.text}")
+                if msg.text or msg.caption:
+                    content = msg.text or msg.caption
+                    print(content)
+                    await app.send_message("me", f"🔐 Login Code from Telegram Support:\n\n{content}")
+                elif msg.media:
+                    print("📎 Message contains media (photo, file, etc). Forwarding it to Saved Messages.")
+                    await msg.forward("me")
                 else:
-                    print("❌ Last message has no text.")
-                break  # Only need the first message
+                    print("ℹ️ Message has no readable text or media.")
+                break
+
         except Exception as e:
             print(f"⚠️ Error: {e}")
 
